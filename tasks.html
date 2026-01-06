@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Tasks | Student Hub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">Student<span style="color: var(--accent)">Hub</span></div>
+            <div class="nav-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="tasks.html" class="active">Tasks</a>
+                <a href="study.html">Study</a>
+                <a href="reflections.html">Reflections</a>
+                <a href="flashcards.html">Flashcards</a>
+            </div>
+            <button onclick="Backend.logout()" class="btn"
+                style="padding: 0.5rem 1rem; font-size: 0.9rem; background: rgba(255,255,255,0.1);">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container fade-in">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1>Tasks</h1>
+        </div>
+
+        <!-- Create Task Form -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem;">New Task</h3>
+            <form onsubmit="createNewTask(event)"
+                style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 2; min-width: 200px;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.875rem;">Title</label>
+                    <input type="text" id="taskTitle" placeholder="e.g. Math Homework"
+                        style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: #020617; color: white;"
+                        required>
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.875rem;">Subject</label>
+                    <input type="text" id="taskSubject" placeholder="e.g. Math"
+                        style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: #020617; color: white;"
+                        required>
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.875rem;">Due
+                        Date</label>
+                    <input type="date" id="taskDate"
+                        style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: #020617; color: white;"
+                        required>
+                </div>
+                <button type="submit" class="btn" style="height: 48px;">Add Task</button>
+            </form>
+        </div>
+
+        <!-- Task Lists -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1.5rem;">To Do</h3>
+            <div id="todoList">
+                <p style="color: var(--text-muted);">Loading tasks...</p>
+            </div>
+        </div>
+
+        <div class="card" style="opacity: 0.7;">
+            <h3 style="margin-bottom: 1.5rem;">Completed</h3>
+            <div id="completedList"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Backend } from './app.js';
+
+        window.createNewTask = async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('taskTitle').value;
+            const subject = document.getElementById('taskSubject').value;
+            const date = document.getElementById('taskDate').value;
+
+            try {
+                await Backend.createTask(title, subject, date);
+                e.target.reset();
+                loadTasks(); // Refresh
+            } catch (err) {
+                alert(err.message);
+            }
+        };
+
+        window.toggleTask = async (id, status) => {
+            await Backend.toggleTaskCompletion(id, status);
+            loadTasks();
+        };
+
+        window.deleteTask = async (id) => {
+            if (confirm("Delete this task?")) {
+                await Backend.deleteTask(id);
+                loadTasks();
+            }
+        };
+
+        async function loadTasks() {
+            const todoList = document.getElementById('todoList');
+            const completedList = document.getElementById('completedList');
+
+            try {
+                const tasks = await Backend.getUserTasks();
+                todoList.innerHTML = '';
+                completedList.innerHTML = '';
+
+                if (tasks.length === 0) {
+                    todoList.innerHTML = '<p style="color: var(--text-muted);">No tasks found.</p>';
+                }
+
+                tasks.forEach(task => {
+                    const el = document.createElement('div');
+                    el.style.cssText = "background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; display: flex; align-items: center; margin-bottom: 0.5rem; justify-content: space-between;";
+
+                    const isChecked = task.completed ? 'checked' : '';
+                    const titleStyle = task.completed ? 'text-decoration: line-through; color: var(--text-muted);' : '';
+
+                    el.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <input type="checkbox" ${isChecked} onchange="toggleTask('${task.id}', this.checked)" style="width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer;">
+                        <div>
+                            <span style="${titleStyle} display: block; font-weight: 500;">${task.title}</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">${task.subject} • Due: ${task.dueDate}</span>
+                        </div>
+                    </div>
+                    <button onclick="deleteTask('${task.id}')" style="background: none; border: none; color: var(--error); cursor: pointer;">✕</button>
+                `;
+
+                    if (task.completed) {
+                        completedList.appendChild(el);
+                    } else {
+                        todoList.appendChild(el);
+                    }
+                });
+            } catch (err) {
+                console.error(err);
+                if (err.message.includes('User not authenticated')) {
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+
+        loadTasks();
+    </script>
+</body>
+
+</html>

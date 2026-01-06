@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards | Student Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specific styles for the 3D flip effect */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 500px;
+            margin: 2rem auto;
+            height: 300px;
+            cursor: pointer;
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard-front,
+        .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            box-sizing: border-box;
+            font-size: 1.5rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .flashcard-front {
+            background-color: var(--card-bg);
+            border: 2px solid var(--accent);
+            color: white;
+        }
+
+        .flashcard-back {
+            background-color: var(--accent);
+            color: white;
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">Student<span style="color: var(--accent)">Hub</span></div>
+            <div class="nav-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="tasks.html">Tasks</a>
+                <a href="study.html">Study</a>
+                <a href="reflections.html">Reflections</a>
+                <a href="flashcards.html" class="active">Flashcards</a>
+            </div>
+            <button onclick="Backend.logout()" class="btn"
+                style="padding: 0.5rem 1rem; font-size: 0.9rem; background: rgba(255,255,255,0.1);">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container fade-in">
+        <h1 style="text-align: center;">Study Flashcards</h1>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 0;">Click the card to flip update.</p>
+        <div style="text-align: center; color: var(--accent); margin-bottom: 2rem; font-weight: bold;" id="counter">
+            Loading...</div>
+
+        <div class="flashcard-container" onclick="flipCard()">
+            <div class="flashcard-inner">
+                <div class="flashcard-front" id="cardFront">
+                    Loading...
+                </div>
+                <div class="flashcard-back" id="cardBack">
+                    <!-- Answer goes here -->
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 2rem;">
+            <button onclick="prevCard()" class="btn" style="background: rgba(255,255,255,0.1);">Previous</button>
+            <button onclick="nextCard()" class="btn">Next Card</button>
+        </div>
+    </div>
+
+    <!-- We load our Backend for logout functionality -->
+    <script type="module" src="app.js"></script>
+    <!-- We load our separate Flashcard Logic -->
+    <script src="flashcards.js"></script>
+</body>
+
+</html>

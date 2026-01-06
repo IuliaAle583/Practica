@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Student Hub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">Student<span style="color: var(--accent)">Hub</span></div>
+            <div class="nav-links">
+                <a href="dashboard.html" class="active">Dashboard</a>
+                <a href="tasks.html">Tasks</a>
+                <a href="study.html">Study</a>
+                <a href="reflections.html">Reflections</a>
+                <a href="flashcards.html">Flashcards</a>
+            </div>
+            <button onclick="Backend.logout()" class="btn"
+                style="padding: 0.5rem 1rem; font-size: 0.9rem; background: rgba(255,255,255,0.1);">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container fade-in">
+        <h1 style="margin-bottom: 0.5rem">Hello, Student! 👋</h1>
+        <p style="color: var(--text-muted); margin-bottom: 2.5rem; font-size: 1.1rem;">Here's your progress overview.
+        </p>
+
+        <div class="grid">
+            <!-- Tasks Summary -->
+            <a href="tasks.html" class="card">
+                <div style="color: var(--accent); font-size: 2rem; margin-bottom: 1rem;">📝</div>
+                <h2>Tasks</h2>
+                <p id="taskSummary" style="color: var(--text-muted)">Loading...</p>
+            </a>
+
+            <!-- Study Timer -->
+            <a href="study.html" class="card">
+                <div style="color: var(--success); font-size: 2rem; margin-bottom: 1rem;">⏱️</div>
+                <h2>Study Zone</h2>
+                <p id="studySummary" style="color: var(--text-muted)">Loading...</p>
+            </a>
+
+            <!-- Reflections -->
+            <a href="reflections.html" class="card">
+                <div style="color: #f472b6; font-size: 2rem; margin-bottom: 1rem;">💭</div>
+                <h2>Reflections</h2>
+                <p id="refSummary" style="color: var(--text-muted)">Loading...</p>
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Backend } from './app.js';
+
+        async function loadStats() {
+            try {
+                // Use Antigravity Backend for aggregation
+                const stats = await Backend.getDashboardStats();
+
+                document.getElementById('taskSummary').textContent = `${stats.pendingTasks} tasks pending today.`;
+                document.getElementById('studySummary').textContent = `${stats.totalStudyTime} mins studied total.`;
+                document.getElementById('refSummary').textContent = `${stats.reflectionCount} entries recorded.`;
+
+            } catch (e) {
+                console.error(e);
+                if (e.message.includes('User not authenticated')) {
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+
+        loadStats();
+    </script>
+</body>
+
+</html>
